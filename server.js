@@ -1,65 +1,78 @@
+
 var express = require('express');
-var app = express();
 var bodyParser = require('body-parser');
+var users = require('./users');
+var config = require('./config');
+
+var port = config.port;
+var app = express();
+
 
 app.use(bodyParser.urlencoded({ extended: false }));
 
-var users = [
-	{id:0, firstName: 'Ivan', secondName: 'Ivanov', lastName: "Ivanovich"},
-	{id:1, firstName: 'Petr', secondName: 'Petrov', lastName: "Petrovich"},
-	{id:2, firstName: 'Test', secondName: 'Testov', lastName: "Testovich"}
-];
 
-app.listen(4444, function() {
-	console.log ('Server is running on port 4444....');
+app.listen(port, function() {
+	console.log ('Server is running on port '+ port);
 });
 
-app.post( "/addUser", function(req, res) {
-	var newUserId = users.length;
+//POST
+app.post( "/user", function createUser(req, res) {
 
-	users[newUserId] = {
-		id: newUserId, 
+	var newUser = {
+		id: users.length, 
+		login: req.body.login,
+		password: req.body.password,
 		firstName: req.body.firstName,
 		secondName: req.body.secondName,
 		lastName: req.body.lastName
 	};
 
+	users.push(newUser);
+
 	res.status(200);
 	res.send('ok');
 });
 
-app.get( "/userId/:id", function(req, res) {
-	if (typeof(users[req.params.id]) === 'undefined') {
+//GET
+app.get( "/user/:id", function getUserValues(req, res) {
+
+	if ( !users[req.params.id] ) {
 		res.status(404);
-		res.send('User is not found');
-	} else {
-		res.status(200);
-		res.send(JSON.stringify(users[req.params.id]));
-	};
+		return res.send('User is not found');
+	} 
+
+	res.status(200);
+	res.send(JSON.stringify(users[req.params.id]));
 });
 
-app.put( "/editUser", function(req, res) {
-	if (typeof(users[req.body.id]) === 'undefined') {
+//PUT
+app.put( "/user/:id", function updateUser(req, res) {
+
+	if ( !users[req.params.id] ) {
 		res.status(404);
-		res.send('User is not found');
-	} else {
-		var newUserParameters = req.body;
-		for (var i in newUserParameters) {
-			users[newUserParameters.id][i] = newUserParameters[i];
-		};
-		res.status(200);
-		res.send('User update is succesfull');
-	};
+		return res.send('User is not found');
+	} 
+
+	var targetUser = users[req.params.id];
+
+	Object.keys(req.body).forEach(function(item) {
+		targetUser[item] = req.body[item];
+	});
+
+	res.status(200);
+	res.send('User update is succesfull');
 });
 
+//DELETE
+app.delete( "/user/:id", function deleteUser(req, res) {
 
-app.delete( "/deleteUser", function(req, res) {
-	if (typeof(users[req.body.id]) === 'undefined') {
+	if ( !users[req.params.id] ) {
 		res.status(404);
-		res.send('User is not found');
-	} else {
-		users.splice([req.body.id], 1);
-		res.status(200);
-		res.send('User is deteled');
-	};
+		return res.send('User is not found');
+	} 
+
+	users.splice([req.params.id], 1);
+
+	res.status(200);
+	res.send('User is deteled');
 });
