@@ -55,12 +55,12 @@ app.put( "/user/:id", function updateUser(req, res) {
 	var targetUser = users[req.params.id];
 
 	Object.keys(req.body).forEach(function(item) {
-		if ( !targetUser[item] ) {
-			return console.error('User haven\'t this property: ' + item);
-		} else if ( req.body.password ) {
+		if ( !targetUser[item] || item === 'id') {
+			return console.error('Can\'t set this property: ' + item);
+		} else if ( item === 'password' ) {
 			hashPassword(req.body.password, req.params.id);
 			return true;
-	 	};
+	 	}
 		targetUser[item] = req.body[item];
 	});
 
