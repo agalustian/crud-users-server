@@ -3,13 +3,13 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var users = require('./users');
 var config = require('./config');
+var bcryptPassword = require('./bcryptPassword');
 
 var port = config.port;
+var hashPassword = bcryptPassword.hashPassword;
 var app = express();
 
-
 app.use(bodyParser.urlencoded({ extended: false }));
-
 
 app.listen(port, function() {
 	console.log ('Server is running on port '+ port);
@@ -21,12 +21,11 @@ app.post( "/user", function createUser(req, res) {
 	var newUser = {
 		id: users.length, 
 		login: req.body.login,
-		password: req.body.password,
+		password: hashPassword( req.body.password, users.length ),
 		firstName: req.body.firstName,
 		secondName: req.body.secondName,
 		lastName: req.body.lastName
 	};
-
 	users.push(newUser);
 
 	res.status(200);
@@ -56,6 +55,12 @@ app.put( "/user/:id", function updateUser(req, res) {
 	var targetUser = users[req.params.id];
 
 	Object.keys(req.body).forEach(function(item) {
+		if ( !targetUser[item] ) {
+			return console.error('User haven\'t this property: ' + item);
+		} else if ( req.body.password ) {
+			hashPassword(req.body.password, req.params.id);
+			return true;
+	 	};
 		targetUser[item] = req.body[item];
 	});
 
