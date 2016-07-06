@@ -2,7 +2,7 @@
 var bcrypt = require('bcryptjs');
 var config = require('./config');
 
-var hashPassword = function(password, id) {
+var hashPassword = function(password) {
 	var salt = bcrypt.genSaltSync(config.saltRounds);
 	var hash = bcrypt.hashSync(password, salt);
   return hash;
@@ -11,3 +11,4 @@ var hashPassword = function(password, id) {
 module.exports = {
 	hashPassword: hashPassword
 }
+
