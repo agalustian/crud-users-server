@@ -1,76 +1,80 @@
 
 var bcryptPassword = require('./bcryptPassword');
+var UserModel = require('./db').UserModel;
 
 var hashPassword = bcryptPassword.hashPassword;
 
-var users = [
-{"id":0,
-"login":"test0",
-"password":"$2a$10$9lp8iM3SBsj23RbiQSQkuOoEeyBRoMnG9IiZUoxjan.qsj7X8FepC",
-"firstName":"Ivan",
-"secondName":"Ivanovich",
-"lastName":"Ivanov"},
-{"id":1,
-"login":"test1",
-"password":"$2a$10$8tZI6D/R3.izg/nisw0GdescoJCNZGk3qkzpl9Rc1PMWmFnQVUvb2",
-"firstName":"Petr",
-"secondName":"Petrovich",
-"lastName":"Petrov"},
-{"id":2,
-"login":"test2",
-"password":"$2a$10$6n1MDOTpNIzaV8FDsOb1wOYrlD4y7kb/uYRsw9MaPhYTtbxqOGwLK",
-"firstName":"Test",
-"secondName":"Testovich",
-"lastName":"Testov"}
-];
-function checkUsers(findBy) {
-  if(findBy[item] === users[i][item]) return true;
+var formatUser = function(user){
+  return {
+    id: user._id,
+    login: user.login,
+    firstName: user.firstName,
+    secondName: user.secondName,
+    lastName: user.lastName
+  }
 }
 
 var userStorage = {
-  addUser:  function(user) {
-              var newUser = {
-                id: users.length, 
-                login: user.login,
-                password: hashPassword( user.password ),
-                firstName: user.firstName,
-                secondName: user.secondName,
-                lastName: user.lastName
-            };
-              users.push(newUser);
-            },
-  editUser: function(targetUser, item, changingValues) {
-              if (item === 'password') {
-                  targetUser[item] = hashPassword(changingValues.password, targetUser.id);
-                  return true; 
-              };
-              targetUser[item] = changingValues[item];
-            },
-  delUser:  function(targetUser) {
-              users.splice(targetUser, 1);
-            },
-  getUser:  function(id) {
-              return users[id];
-            },
-  getAllUsers: function(findBy) {
-    return searchUsers(findBy); 
-  }           
-}
+  addUser:  function(newUserData, callback) {
+    newUserData.password = hashPassword(newUserData.password);
+    var newUser = new UserModel(newUserData);
+     newUser.save(function(err, user){
+      if (err) {
+        return callback(err.message);
+      }
+      callback(null, user);
+    });
+    
+  },
+  editUser: function(userId, changingValues, callback) {
+    UserModel.findById({'_id': userId}, function(err, user){
+      if(err) {
+        return callback(err);
+      }
 
-function searchUsers(findBy) {
-  return users.filter(function(user) {
-    var findByColl = Object.keys(findBy);
-    for ( var i = 0; i < findByColl.length; i++ ) {
-      var key = findByColl[i];
-      if ( findBy[key] != user[key] ) {
-        return false;
-      } 
-    }
-    return true;
-  });
-};
+      user.login = changingValues.login;
+      user.password = hashPassword(changingValues.password);
+      user.firstName = changingValues.firstName;
+      user.secondName = changingValues.secondName;
+      user.lastName = changingValues.lastName;
+
+      user.save(function(err, user) {
+        if (err) {
+          return callback(err.message);
+        }
+        callback(null, user);
+      })
+    })
+  },
+  delUser:  function(userId, callback) {
+    return UserModel.findOne({'_id': userId}).remove(function(err, data) {
+      if (err) {
+        return callback(err);
+      }
+      callback(null, data)
+    });
+  },
+  findById:  function(id, callback) {
+    UserModel.findOne({'_id': id}, function(err, data) {
+      if (err) {
+        return callback(err);
+      }
+      callback(null, formatUser(data));
+    }) 
+  },
+  findUsers: function(findBy, callback) {
+    UserModel.find(findBy, function(err, data) {
+      if (err) {
+        return callback(err);
+      }
+      var users = data.map(function(user) {
+          return formatUser(user);
+        })
+      callback(null,users);
+    });
+  }
+}
 
 module.exports = {
   userStorage: userStorage,
-  users:users
 }

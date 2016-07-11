@@ -24,7 +24,7 @@ npm-debug.log*
 # Dependency directories
 bower_components/
 node_modules/
-
+db/
 # Yeoman meta-data
 .yo-rc.json
 
@@ -36,6 +36,7 @@ es5/
 tmp
 test/test-manifests.js
 test/test-expected.js
+
 .node_modules
 .dist
 gulpfile.js

@@ -1,56 +1,65 @@
 
 var users = require('./users');
+var util = require('util');
 
 var userStorage = users.userStorage;
 
 function createUser(req, res) {
-  userStorage.addUser(req.body);
-  res.status(200).send('User succesfull created');
+  userStorage.addUser(req.body, function(err, data) {
+    if (err) {
+      return res.status(500).send(err);
+    }
+    res.status(200).send('user created');
+  });
 };
 
-function getUserData(req, res) {
-  if ( !userStorage.getUser(req.params.id) ) {
-    return res.status(404).send('User is not found');
-  }; 
-
-  res.status(200).send(JSON.stringify(userStorage.getUser(req.params.id)));
+function findUserById(req, res) {
+  userStorage.findById(req.params.id, function(err, data) {
+    if (err) {
+      console.error('can\'t find');
+      return res.status(404).send('not found');
+    }    
+    res.status(200).send(JSON.stringify(data));
+  });
 }
 
-function getAllUsersData(req, res) {
-  res.send(JSON.stringify(userStorage.getAllUsers(req.query)));
+function findUsersData(req, res) {
+  userStorage.findUsers(req.query, function(err, data){
+    if (err) {
+      console.error('can\'t find');
+      return res.status(404).send('not found');
+    } 
+    res.status(200).send(util.format("%j", data));   
+  })
 }
 
 function updateUser(req, res) {
-  if ( !userStorage.getUser(req.params.id)) {
-    return res.status(404).send('User is not found');
-  }; 
+  if (req.body.id) {
+    return console.error('Can\'t change this property: ' + req.body.id);
+  };
+  userStorage.editUser(req.params.id, req.body, function(err, data) {
+    if(err) {
+      return res.status(404).send('not found');
+    }
+    res.status(200).send('update is sucessfull');
+  });
+}
 
-  var targetUser = userStorage.getUser(req.params.id);
-
-  Object.keys(req.body).forEach(function(item) {
-    if ( !targetUser[item] || item === 'id') {
-      return console.error('Can\'t set this property: ' + item);
-    };
-    userStorage.editUser(targetUser, item, req.body);
+function removeUser(req, res) {
+  userStorage.delUser(req.params.id, function(err, data) {
+    if (err) {
+      return res.status(404).send('cant delete'); 
+    }
+    res.status(200).send(data);
   });
 
-  res.status(200).send('User update is succesfull');
-}
-//
-function deleteUser(req, res) {
-  if (  !userStorage.getUser(req.params.id)) {
-    return res.status(404).send('User is not found');
-  }; 
-
-  userStorage.delUser(req.params.id);
-
-  res.status(200).send('User is deteled');
+  
 }
 
 module.exports = {
   createUser: createUser,
-  getUserData: getUserData,
+  findUserById: findUserById,
   updateUser: updateUser,
-  deleteUser: deleteUser,
-  getAllUsersData:getAllUsersData
+  removeUser: removeUser,
+  findUsersData:findUsersData
 }

@@ -14,10 +14,10 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
 app.post("/user", controller.createUser);
-app.get("/user/:id", controller.getUserData);
-app.get("/users", controller.getAllUsersData);
+app.get("/user/:id", controller.findUserById);
+app.get("/users", controller.findUsersData);
 app.put("/user/:id", controller.updateUser);
-app.delete("/user/:id", controller.deleteUser);
+app.delete("/user/:id", controller.removeUser);
 
 app.listen(port, function() {
 	console.log ('Server is running on port '+ port);
