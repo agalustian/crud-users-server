@@ -4,6 +4,7 @@ var util = require('util');
 
 var userStorage = users.userStorage;
 
+//Users Controller
 function createUser(req, res) {
   userStorage.addUser(req.body, function(err, data) {
     if (err) {
@@ -35,7 +36,7 @@ function findUsersData(req, res) {
 
 function updateUser(req, res) {
   if (req.body.id) {
-    return console.error('Can\'t change this property: ' + req.body.id);
+    return res.status(500).send('Can\'t change this property: ' + req.body.id);
   };
   userStorage.editUser(req.params.id, req.body, function(err, data) {
     if(err) {
@@ -52,8 +53,6 @@ function removeUser(req, res) {
     }
     res.status(200).send(data);
   });
-
-  
 }
 
 module.exports = {
@@ -61,5 +60,5 @@ module.exports = {
   findUserById: findUserById,
   updateUser: updateUser,
   removeUser: removeUser,
-  findUsersData:findUsersData
+  findUsersData:findUsersData,
 }

@@ -1,6 +1,6 @@
 
 var bcryptPassword = require('./bcryptPassword');
-var UserModel = require('./db').UserModel;
+var UserModel = require('./libs/db').UserModel;
 
 var hashPassword = bcryptPassword.hashPassword;
 
@@ -32,11 +32,11 @@ var userStorage = {
         return callback(err);
       }
 
-      user.login = changingValues.login;
-      user.password = hashPassword(changingValues.password);
-      user.firstName = changingValues.firstName;
-      user.secondName = changingValues.secondName;
-      user.lastName = changingValues.lastName;
+      user.login = changingValues.login || user.login;
+      user.password = hashPassword(changingValues.password) || user.password;
+      user.firstName = changingValues.firstName || user.firstName;
+      user.secondName = changingValues.secondName || user.secondName;
+      user.lastName = changingValues.lastName || user.lastName;
 
       user.save(function(err, user) {
         if (err) {
