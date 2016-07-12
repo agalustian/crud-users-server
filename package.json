@@ -10,8 +10,9 @@
   "author": "Andrei Galustian",
   "license": "ISC",
   "dependencies": {
-    "bcrypt-nodejs": "0.0.3",
     "bcryptjs": "^2.3.0",
-    "express": "^4.14.0"
+    "express": "^4.14.0",
+    "lodash": "^4.13.1",
+    "mongoose": "^4.5.3"
   }
 }
