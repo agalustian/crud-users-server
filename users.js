@@ -11,8 +11,8 @@ var formatUser = function(user){
     firstName: user.firstName,
     secondName: user.secondName,
     lastName: user.lastName
-  }
-}
+  };
+};
 
 var userStorage = {
   addUser:  function(newUserData, callback) {
@@ -21,16 +21,16 @@ var userStorage = {
      newUser.save(function(err, user){
       if (err) {
         return callback(err.message);
-      }
+      };
       callback(null, user);
     });
     
   },
   editUser: function(userId, changingValues, callback) {
-    UserModel.findById({'_id': userId}, function(err, user){
-      if(err) {
-        return callback(err);
-      }
+    UserModel.findOne({'_id': userId}, function(err, user){
+      if(err || user === null) {
+        return callback('not found');
+      };
 
       user.login = changingValues.login || user.login;
       user.password = hashPassword(changingValues.password) || user.password;
@@ -41,32 +41,38 @@ var userStorage = {
       user.save(function(err, user) {
         if (err) {
           return callback(err.message);
-        }
+        };
         callback(null, user);
       })
     })
   },
   delUser:  function(userId, callback) {
-    return UserModel.findOne({'_id': userId}).remove(function(err, data) {
-      if (err) {
-        return callback(err);
-      }
-      callback(null, data)
-    });
+    UserModel.findById({'_id': userId}, function(err, user){
+      console.log(err, user);
+      if (err || user === null){
+        return callback('not found');
+      };
+      user.remove(function(err, data) {
+        if (err) {
+          return callback(err);
+        };
+        callback(null, data);
+      });
+    }) 
   },
   findById:  function(id, callback) {
-    UserModel.findOne({'_id': id}, function(err, data) {
-      if (err) {
-        return callback(err);
-      }
-      callback(null, formatUser(data));
+    UserModel.findOne({'_id': id}, function(err, user) {
+      if (err || data === null) {
+        return callback('not found');
+      };
+      callback(null, formatUser(user));
     }) 
   },
   findUsers: function(findBy, callback) {
     UserModel.find(findBy, function(err, data) {
-      if (err) {
-        return callback(err);
-      }
+      if (err || data === null) {
+        return callback('not found');
+      };
       var users = data.map(function(user) {
           return formatUser(user);
         })

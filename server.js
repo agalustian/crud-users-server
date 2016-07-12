@@ -19,6 +19,12 @@ app.get("/users", controller.findUsersData);
 app.put("/user/:id", controller.updateUser);
 app.delete("/user/:id", controller.removeUser);
 
+app.post("/camera", controller.createCamera);
+app.get("/camera/:id", controller.findCameraById);
+app.get("/cameras", controller.findCamerasData);
+app.put("/camera/:id", controller.updateCamera);
+app.delete("/camera/:id", controller.removeCamera);
+
 app.listen(port, function() {
 	console.log ('Server is running on port '+ port);
 });
